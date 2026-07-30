@@ -1,6 +1,7 @@
 {
   "@@locale": "en",
   "appName": "Daily Ledger",
+  "mambaTagline": "Focus daily. Own every dollar.",
   "recordTab": "Record",
   "transactionsTab": "Transactions",
   "statisticsTab": "Statistics",

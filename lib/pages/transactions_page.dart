@@ -8,6 +8,7 @@ import '../l10n/localization_extensions.dart';
 import '../models/ledger_transaction.dart';
 import '../state/ledger_controller.dart';
 import '../widgets/edit_transaction_sheet.dart';
+import '../widgets/mamba_page_header.dart';
 import '../widgets/month_switcher.dart';
 
 class TransactionsPage extends StatelessWidget {
@@ -46,14 +47,9 @@ class TransactionsPage extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    context.l10n.transactionsTab,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                child: MambaPageHeader(
+                  title: context.l10n.transactionsTab,
+                  subtitle: context.l10n.mambaTagline,
                 ),
               ),
               MonthSwitcher(
@@ -178,8 +174,9 @@ class _DayGroup extends StatelessWidget {
                 Text(
                   context.l10n.dailyIncome(MoneyFormatter.currency(income)),
                   style: const TextStyle(
-                    color: AppColors.primary,
+                    color: AppColors.income,
                     fontSize: 12,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -213,7 +210,7 @@ class _TransactionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final amountColor = transaction.type == TransactionType.income
-        ? AppColors.primary
+        ? AppColors.income
         : AppColors.expense;
     return Dismissible(
       key: ValueKey(transaction.id),
@@ -254,7 +251,7 @@ class _TransactionRow extends StatelessWidget {
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         leading: CircleAvatar(
-          backgroundColor: AppColors.primarySoft,
+          backgroundColor: AppColors.goldSoft,
           foregroundColor: AppColors.primary,
           child: Icon(transaction.category.icon),
         ),

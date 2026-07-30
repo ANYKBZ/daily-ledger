@@ -12,6 +12,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appName => '收支本';
 
   @override
+  String get mambaTagline => '专注每一天，掌控每一笔';
+
+  @override
   String get recordTab => '记账';
 
   @override

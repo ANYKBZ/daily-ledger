@@ -1,6 +1,7 @@
 {
   "@@locale": "zh",
   "appName": "收支本",
+  "mambaTagline": "专注每一天，掌控每一笔",
   "recordTab": "记账",
   "transactionsTab": "明细",
   "statisticsTab": "统计",

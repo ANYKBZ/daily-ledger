@@ -22,6 +22,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('收支本'), findsOneWidget);
+    expect(find.text('MAMBA MODE'), findsOneWidget);
+    expect(find.text('8  •  24'), findsOneWidget);
     expect(find.text('记账'), findsOneWidget);
     expect(find.text('明细'), findsOneWidget);
     expect(find.text('统计'), findsOneWidget);

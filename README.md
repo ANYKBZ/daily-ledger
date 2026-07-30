@@ -4,6 +4,14 @@
 
 A calm, local-first personal income and expense tracker built with Flutter. The interface supports Simplified Chinese and English.
 
+## 视觉设计 / Visual design
+
+界面采用现代记账应用常见的快速录入、大金额焦点、圆角数据卡、分类图标和月度圆环图结构，并加入原创的紫金“比赛夜”主题。球场线条、8/24 徽章和黑曼巴动势表达专注精神，但不使用 NBA、湖人官方标识或科比肖像。
+
+The interface combines the quick-entry, amount-first, card-based structure common to modern finance apps with an original purple-and-gold game-night theme. Court lines, an 8/24 badge, and mamba-inspired motion cues express focus without using NBA or Lakers marks or Kobe Bryant's likeness.
+
+原创图标源文件位于 `assets/branding/mamba-ledger-icon-v1.png`。
+
 ## 第一版功能 / Version 1
 
 - 手动记录美元收入和支出

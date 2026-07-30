@@ -8,6 +8,7 @@ import '../core/formatters.dart';
 import '../l10n/localization_extensions.dart';
 import '../models/ledger_transaction.dart';
 import '../state/ledger_controller.dart';
+import '../widgets/mamba_page_header.dart';
 import '../widgets/month_switcher.dart';
 
 class StatisticsPage extends StatelessWidget {
@@ -25,14 +26,9 @@ class StatisticsPage extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    context.l10n.statisticsTab,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                child: MambaPageHeader(
+                  title: context.l10n.statisticsTab,
+                  subtitle: context.l10n.mambaTagline,
                 ),
               ),
               MonthSwitcher(
@@ -81,7 +77,7 @@ class _StatisticsContent extends StatelessWidget {
               child: _SummaryCard(
                 label: context.l10n.totalIncome,
                 amount: MoneyFormatter.currency(summary.incomeCents),
-                color: AppColors.primary,
+                color: AppColors.income,
                 icon: Icons.south_west_rounded,
               ),
             ),
@@ -139,7 +135,15 @@ class _SummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color),
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 21),
+            ),
             const SizedBox(height: 12),
             Text(label, style: const TextStyle(color: AppColors.mutedText)),
             const SizedBox(height: 4),
@@ -168,8 +172,16 @@ class _BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = balanceCents < 0 ? AppColors.expense : AppColors.primary;
-    return Card(
+    final amountColor = balanceCents < 0
+        ? const Color(0xFFFFA0AA)
+        : AppColors.gold;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          colors: [AppColors.primaryDark, AppColors.primary],
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Row(
@@ -178,17 +190,20 @@ class _BalanceCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: const BoxDecoration(
-                color: AppColors.primarySoft,
+                color: AppColors.gold,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.account_balance_wallet_rounded, color: color),
+              child: const Icon(
+                Icons.account_balance_wallet_rounded,
+                color: AppColors.primaryDark,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
                 context.l10n.balance,
                 style: const TextStyle(
-                  color: AppColors.mutedText,
+                  color: Colors.white70,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -196,7 +211,7 @@ class _BalanceCard extends StatelessWidget {
             Text(
               MoneyFormatter.currency(balanceCents, signed: true),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: color,
+                color: amountColor,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -232,21 +247,46 @@ class _BreakdownChart extends StatelessWidget {
             children: [
               SizedBox(
                 height: 220,
-                child: PieChart(
-                  PieChartData(
-                    centerSpaceRadius: 58,
-                    sectionsSpace: 3,
-                    startDegreeOffset: -90,
-                    sections: [
-                      for (final entry in categories)
-                        PieChartSectionData(
-                          value: entry.value.toDouble(),
-                          color: AppColors.categoryColors[entry.key.index],
-                          radius: 38,
-                          showTitle: false,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PieChart(
+                      PieChartData(
+                        centerSpaceRadius: 58,
+                        sectionsSpace: 3,
+                        startDegreeOffset: -90,
+                        sections: [
+                          for (final entry in categories)
+                            PieChartSectionData(
+                              value: entry.value.toDouble(),
+                              color: AppColors.categoryColors[entry.key.index],
+                              radius: 38,
+                              showTitle: false,
+                            ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          context.l10n.totalExpense,
+                          style: const TextStyle(
+                            color: AppColors.mutedText,
+                            fontSize: 12,
+                          ),
                         ),
-                    ],
-                  ),
+                        const SizedBox(height: 3),
+                        Text(
+                          MoneyFormatter.currency(totalCents),
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 8),

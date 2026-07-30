@@ -12,6 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appName => 'Daily Ledger';
 
   @override
+  String get mambaTagline => 'Focus daily. Own every dollar.';
+
+  @override
   String get recordTab => 'Record';
 
   @override

@@ -10,6 +10,7 @@ import '../core/formatters.dart';
 import '../l10n/localization_extensions.dart';
 import '../models/ledger_transaction.dart';
 import '../state/ledger_controller.dart';
+import '../widgets/mamba_page_header.dart';
 
 class EntryPage extends StatefulWidget {
   const EntryPage({super.key, required this.controller});
@@ -196,13 +197,11 @@ class _EntryPageState extends State<EntryPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              context.l10n.appName,
-              style: textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+            MambaPageHeader(
+              title: context.l10n.appName,
+              subtitle: context.l10n.mambaTagline,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             SegmentedButton<TransactionType>(
               segments: [
                 ButtonSegment(
@@ -248,7 +247,7 @@ class _EntryPageState extends State<EntryPage> {
                               style: textTheme.displaySmall?.copyWith(
                                 fontWeight: FontWeight.w800,
                                 color: _type == TransactionType.income
-                                    ? AppColors.primary
+                                    ? AppColors.income
                                     : AppColors.text,
                               ),
                             ),
@@ -260,6 +259,10 @@ class _EntryPageState extends State<EntryPage> {
                       key: const Key('receipt-photo-button'),
                       tooltip: context.l10n.photoRecord,
                       onPressed: _openPhotoMenu,
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.goldSoft,
+                        foregroundColor: AppColors.primary,
+                      ),
                       icon: const Icon(Icons.document_scanner_rounded),
                     ),
                   ],
@@ -359,10 +362,11 @@ class _CategoryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? AppColors.primarySoft : AppColors.surface,
+      color: selected ? AppColors.goldSoft : AppColors.surface,
       shape: StadiumBorder(
         side: BorderSide(
-          color: selected ? AppColors.primary : AppColors.divider,
+          color: selected ? AppColors.gold : AppColors.divider,
+          width: selected ? 1.5 : 1,
         ),
       ),
       child: InkWell(
@@ -406,15 +410,16 @@ class _NumberPad extends StatelessWidget {
             onPressed: () => onKey(keyValue),
             child: Text(
               keyValue,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         _KeypadButton(
           key: const Key('keypad-backspace'),
           onPressed: () => onKey('backspace'),
-          child: const Icon(Icons.backspace_outlined),
+          child: const Icon(Icons.backspace_outlined, color: AppColors.primary),
         ),
       ],
     );
@@ -435,9 +440,12 @@ class _KeypadButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.surface,
-      borderRadius: BorderRadius.circular(14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.divider),
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         onTap: onPressed,
         child: Center(child: child),
       ),

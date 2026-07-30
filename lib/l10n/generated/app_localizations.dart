@@ -104,6 +104,12 @@ abstract class AppLocalizations {
   /// **'Daily Ledger'**
   String get appName;
 
+  /// No description provided for @mambaTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus daily. Own every dollar.'**
+  String get mambaTagline;
+
   /// No description provided for @recordTab.
   ///
   /// In en, this message translates to:
