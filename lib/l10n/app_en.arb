@@ -4,13 +4,6 @@
   "mambaTagline": "Focus daily. Own every dollar.",
   "convertAmountsToCny": "Convert transaction amounts to Chinese yuan",
   "showAmountsInUsd": "Switch amounts back to US dollars",
-  "rateApplied": "Converted at 1 USD = {rate} CNY ({date})",
-  "@rateApplied": {
-    "placeholders": {
-      "rate": {"type": "String"},
-      "date": {"type": "String"}
-    }
-  },
   "rateError": "Unable to load the latest rate. Check your connection and retry.",
   "recordTab": "Record",
   "transactionsTab": "Transactions",

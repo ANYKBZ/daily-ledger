@@ -21,11 +21,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showAmountsInUsd => '切换回美元金额';
 
   @override
-  String rateApplied(String rate, String date) {
-    return '已按 1 USD = $rate CNY 转换（$date）';
-  }
-
-  @override
   String get rateError => '无法获取最新汇率，请检查网络后重试。';
 
   @override

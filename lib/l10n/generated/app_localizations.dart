@@ -122,12 +122,6 @@ abstract class AppLocalizations {
   /// **'Switch amounts back to US dollars'**
   String get showAmountsInUsd;
 
-  /// No description provided for @rateApplied.
-  ///
-  /// In en, this message translates to:
-  /// **'Converted at 1 USD = {rate} CNY ({date})'**
-  String rateApplied(String rate, String date);
-
   /// No description provided for @rateError.
   ///
   /// In en, this message translates to:

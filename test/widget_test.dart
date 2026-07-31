@@ -125,6 +125,7 @@ void main() {
 
     expect(find.text('+¥60,824.70'), findsOneWidget);
     expect(find.text('货币转换'), findsNothing);
+    expect(find.byType(SnackBar), findsNothing);
 
     await tester.tap(find.byKey(const Key('currency-converter-button')));
     await tester.pumpAndSettle();

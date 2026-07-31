@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../core/app_colors.dart';
 import '../core/formatters.dart';
@@ -53,17 +52,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
         _usdToCnyRate = quote.rate;
         _showCny = true;
       });
-      final locale = Localizations.localeOf(context).toLanguageTag();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.l10n.rateApplied(
-              quote.rate.toStringAsFixed(4),
-              DateFormat.yMMMd(locale).format(quote.rateDate),
-            ),
-          ),
-        ),
-      );
     } on ExchangeRateException {
       if (!mounted) return;
       _showRateError();

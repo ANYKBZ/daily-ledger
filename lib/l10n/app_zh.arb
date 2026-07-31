@@ -4,13 +4,6 @@
   "mambaTagline": "专注每一天，掌控每一笔",
   "convertAmountsToCny": "将明细金额转换为人民币",
   "showAmountsInUsd": "切换回美元金额",
-  "rateApplied": "已按 1 USD = {rate} CNY 转换（{date}）",
-  "@rateApplied": {
-    "placeholders": {
-      "rate": {"type": "String"},
-      "date": {"type": "String"}
-    }
-  },
   "rateError": "无法获取最新汇率，请检查网络后重试。",
   "recordTab": "记账",
   "transactionsTab": "明细",

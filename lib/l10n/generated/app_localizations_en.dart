@@ -22,11 +22,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showAmountsInUsd => 'Switch amounts back to US dollars';
 
   @override
-  String rateApplied(String rate, String date) {
-    return 'Converted at 1 USD = $rate CNY ($date)';
-  }
-
-  @override
   String get rateError =>
       'Unable to load the latest rate. Check your connection and retry.';
 
