@@ -30,6 +30,21 @@ abstract final class MoneyFormatter {
     if (!signed || cents == 0) return value;
     return cents > 0 ? '+$value' : '-$value';
   }
+
+  static String convertedCurrency(
+    int usdCents, {
+    required double rate,
+    bool signed = false,
+  }) {
+    final formatter = NumberFormat.currency(
+      locale: 'zh_CN',
+      symbol: '¥',
+      decimalDigits: 2,
+    );
+    final value = formatter.format(usdCents.abs() / 100 * rate);
+    if (!signed || usdCents == 0) return value;
+    return usdCents > 0 ? '+$value' : '-$value';
+  }
 }
 
 abstract final class DateTools {

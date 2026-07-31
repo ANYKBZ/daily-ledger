@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shou_zhi_ben/app.dart';
 import 'package:shou_zhi_ben/models/exchange_rate_quote.dart';
+import 'package:shou_zhi_ben/models/ledger_transaction.dart';
 import 'package:shou_zhi_ben/services/exchange_rate_service.dart';
 
 import 'support/in_memory_repository.dart';
@@ -39,7 +40,10 @@ void main() {
       );
       await tester.pump();
     }
-    expect(find.text('\$12.34'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('amount-display'))).data,
+      '\$12.34',
+    );
 
     await tester.ensureVisible(find.byKey(const Key('save-transaction')));
     await tester.tap(find.byKey(const Key('save-transaction')));
@@ -47,7 +51,10 @@ void main() {
 
     expect(repository.items, hasLength(1));
     expect(repository.items.single.amountCents, 1234);
-    expect(find.text('\$0'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('amount-display'))).data,
+      '\$0',
+    );
     expect(find.text('保存成功'), findsOneWidget);
 
     await tester.tap(find.text('明细'));
@@ -78,7 +85,7 @@ void main() {
     expect(find.text('Choose from library'), findsOneWidget);
   });
 
-  testWidgets('converts CNY and USD with the latest injected rate', (
+  testWidgets('toggles transaction amounts between USD and CNY in place', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -86,9 +93,23 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final now = DateTime.now();
+    final repository = InMemoryLedgerRepository()
+      ..items.add(
+        LedgerTransaction(
+          id: 1,
+          type: TransactionType.income,
+          amountCents: 900000,
+          category: ExpenseCategory.income,
+          date: now,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+
     await tester.pumpWidget(
       DailyLedgerApp(
-        repository: InMemoryLedgerRepository(),
+        repository: repository,
         locale: const Locale('zh'),
         exchangeRateProvider: _FakeExchangeRateProvider(),
       ),
@@ -97,18 +118,18 @@ void main() {
 
     await tester.tap(find.text('明细'));
     await tester.pumpAndSettle();
+    expect(find.text(r'+$9,000.00'), findsOneWidget);
+
     await tester.tap(find.byKey(const Key('currency-converter-button')));
     await tester.pumpAndSettle();
 
-    expect(find.text('货币转换'), findsOneWidget);
-    expect(find.text('人民币'), findsOneWidget);
-    expect(find.text('美元'), findsWidgets);
-    expect(find.text(r'$14.80'), findsOneWidget);
+    expect(find.text('+¥60,824.70'), findsOneWidget);
+    expect(find.text('货币转换'), findsNothing);
 
-    await tester.tap(find.byKey(const Key('swap-currencies')));
+    await tester.tap(find.byKey(const Key('currency-converter-button')));
     await tester.pumpAndSettle();
 
-    expect(find.text('¥675.83'), findsOneWidget);
+    expect(find.text(r'+$9,000.00'), findsOneWidget);
   });
 }
 
@@ -122,7 +143,7 @@ class _FakeExchangeRateProvider implements ExchangeRateProvider {
     return ExchangeRateQuote(
       baseCode: baseCode,
       quoteCode: quoteCode,
-      rate: baseCode == 'CNY' ? 0.14797 : 6.7583,
+      rate: 6.7583,
       rateDate: DateTime(2026, 7, 31),
       fetchedAt: DateTime(2026, 7, 31, 8),
     );

@@ -22,6 +22,17 @@ void main() {
       expect(MoneyFormatter.currency(1234, signed: true), '+\$12.34');
       expect(MoneyFormatter.currency(-1234, signed: true), '-\$12.34');
     });
+
+    test('converts USD cents to signed CNY', () {
+      expect(
+        MoneyFormatter.convertedCurrency(900000, rate: 6.7583, signed: true),
+        '+¥60,824.70',
+      );
+      expect(
+        MoneyFormatter.convertedCurrency(-1234, rate: 6.7583, signed: true),
+        '-¥83.40',
+      );
+    });
   });
 
   test('database dates remain local calendar dates', () {

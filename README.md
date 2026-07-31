@@ -17,7 +17,7 @@ The interface combines the quick-entry, amount-first, card-based structure commo
 - 手动记录美元收入和支出
 - 餐饮、交通、购物、住房、其他五类支出
 - 按日期分组的月度明细
-- 人民币与美元实时换算（Frankfurter 最新官方参考汇率）
+- 明细金额一键切换美元/人民币显示（Frankfurter 最新官方参考汇率）
 - 编辑、左滑删除与撤销
 - 月度收入、支出、结余和支出分类圆环图
 - 相机与相册小票入口（自动识别将在下一阶段加入）
@@ -28,7 +28,7 @@ The interface combines the quick-entry, amount-first, card-based structure commo
 - Record USD income and expenses manually
 - Five expense categories: food, transport, shopping, housing, and other
 - Monthly transactions grouped by date
-- CNY/USD conversion using Frankfurter's latest official reference rate
+- One-tap USD/CNY display switching for transaction amounts using Frankfurter's latest official reference rate
 - Edit, swipe to delete, and undo
 - Monthly totals and expense breakdown chart
 - Camera and photo-library receipt entry point (recognition comes next)

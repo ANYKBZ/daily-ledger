@@ -110,95 +110,29 @@ abstract class AppLocalizations {
   /// **'Focus daily. Own every dollar.'**
   String get mambaTagline;
 
-  /// No description provided for @currencyConverter.
+  /// No description provided for @convertAmountsToCny.
   ///
   /// In en, this message translates to:
-  /// **'Currency converter'**
-  String get currencyConverter;
+  /// **'Convert transaction amounts to Chinese yuan'**
+  String get convertAmountsToCny;
 
-  /// No description provided for @currencyConverterTooltip.
+  /// No description provided for @showAmountsInUsd.
   ///
   /// In en, this message translates to:
-  /// **'Convert Chinese yuan and US dollars'**
-  String get currencyConverterTooltip;
+  /// **'Switch amounts back to US dollars'**
+  String get showAmountsInUsd;
 
-  /// No description provided for @chineseYuan.
+  /// No description provided for @rateApplied.
   ///
   /// In en, this message translates to:
-  /// **'Chinese yuan'**
-  String get chineseYuan;
-
-  /// No description provided for @usDollar.
-  ///
-  /// In en, this message translates to:
-  /// **'US dollar'**
-  String get usDollar;
-
-  /// No description provided for @fromCurrency.
-  ///
-  /// In en, this message translates to:
-  /// **'From'**
-  String get fromCurrency;
-
-  /// No description provided for @toCurrency.
-  ///
-  /// In en, this message translates to:
-  /// **'To'**
-  String get toCurrency;
-
-  /// No description provided for @switchCurrencies.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch currencies'**
-  String get switchCurrencies;
-
-  /// No description provided for @amountToConvert.
-  ///
-  /// In en, this message translates to:
-  /// **'Amount to convert'**
-  String get amountToConvert;
-
-  /// No description provided for @convertedResult.
-  ///
-  /// In en, this message translates to:
-  /// **'Converted amount'**
-  String get convertedResult;
-
-  /// No description provided for @rateDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Rate date: {date}'**
-  String rateDate(String date);
-
-  /// No description provided for @refreshRate.
-  ///
-  /// In en, this message translates to:
-  /// **'Refresh rate'**
-  String get refreshRate;
+  /// **'Converted at 1 USD = {rate} CNY ({date})'**
+  String rateApplied(String rate, String date);
 
   /// No description provided for @rateError.
   ///
   /// In en, this message translates to:
   /// **'Unable to load the latest rate. Check your connection and retry.'**
   String get rateError;
-
-  /// No description provided for @retry.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get retry;
-
-  /// No description provided for @currencyDisclaimer.
-  ///
-  /// In en, this message translates to:
-  /// **'Reference rate only; bank fees and spreads are not included.'**
-  String get currencyDisclaimer;
-
-  /// No description provided for @exchangeRateSource.
-  ///
-  /// In en, this message translates to:
-  /// **'Source: Frankfurter central-bank reference rates'**
-  String get exchangeRateSource;
 
   /// No description provided for @recordTab.
   ///

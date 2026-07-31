@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../core/app_colors.dart';
 import '../core/formatters.dart';
@@ -8,12 +9,13 @@ import '../l10n/localization_extensions.dart';
 import '../models/ledger_transaction.dart';
 import '../services/exchange_rate_service.dart';
 import '../state/ledger_controller.dart';
-import '../widgets/currency_converter_sheet.dart';
 import '../widgets/edit_transaction_sheet.dart';
 import '../widgets/mamba_page_header.dart';
 import '../widgets/month_switcher.dart';
 
-class TransactionsPage extends StatelessWidget {
+typedef _AmountFormatter = String Function(int cents, {bool signed});
+
+class TransactionsPage extends StatefulWidget {
   const TransactionsPage({
     super.key,
     required this.controller,
@@ -25,15 +27,66 @@ class TransactionsPage extends StatelessWidget {
   final ExchangeRateProvider exchangeRateProvider;
   final VoidCallback onRecordRequested;
 
-  Future<void> _openCurrencyConverter(BuildContext context) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      useSafeArea: true,
-      builder: (context) =>
-          CurrencyConverterSheet(provider: exchangeRateProvider),
-    );
+  @override
+  State<TransactionsPage> createState() => _TransactionsPageState();
+}
+
+class _TransactionsPageState extends State<TransactionsPage> {
+  bool _showCny = false;
+  bool _isLoadingRate = false;
+  double? _usdToCnyRate;
+
+  Future<void> _toggleCurrency() async {
+    if (_showCny) {
+      setState(() => _showCny = false);
+      return;
+    }
+
+    setState(() => _isLoadingRate = true);
+    try {
+      final quote = await widget.exchangeRateProvider.latest(
+        baseCode: 'USD',
+        quoteCode: 'CNY',
+      );
+      if (!mounted) return;
+      setState(() {
+        _usdToCnyRate = quote.rate;
+        _showCny = true;
+      });
+      final locale = Localizations.localeOf(context).toLanguageTag();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.l10n.rateApplied(
+              quote.rate.toStringAsFixed(4),
+              DateFormat.yMMMd(locale).format(quote.rateDate),
+            ),
+          ),
+        ),
+      );
+    } on ExchangeRateException {
+      if (!mounted) return;
+      _showRateError();
+    } catch (_) {
+      if (!mounted) return;
+      _showRateError();
+    } finally {
+      if (mounted) setState(() => _isLoadingRate = false);
+    }
+  }
+
+  void _showRateError() {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(context.l10n.rateError)));
+  }
+
+  String _formatAmount(int cents, {bool signed = false}) {
+    final rate = _usdToCnyRate;
+    if (!_showCny || rate == null) {
+      return MoneyFormatter.currency(cents, signed: signed);
+    }
+    return MoneyFormatter.convertedCurrency(cents, rate: rate, signed: signed);
   }
 
   Future<void> _edit(
@@ -47,7 +100,7 @@ class TransactionsPage extends StatelessWidget {
       useSafeArea: true,
       builder: (context) => EditTransactionSheet(
         transaction: transaction,
-        controller: controller,
+        controller: widget.controller,
       ),
     );
   }
@@ -56,7 +109,7 @@ class TransactionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: AnimatedBuilder(
-        animation: controller,
+        animation: widget.controller,
         builder: (context, _) {
           return Column(
             children: [
@@ -67,21 +120,32 @@ class TransactionsPage extends StatelessWidget {
                   subtitle: context.l10n.mambaTagline,
                   action: IconButton.filled(
                     key: const Key('currency-converter-button'),
-                    tooltip: context.l10n.currencyConverterTooltip,
-                    onPressed: () => _openCurrencyConverter(context),
+                    tooltip: _showCny
+                        ? context.l10n.showAmountsInUsd
+                        : context.l10n.convertAmountsToCny,
+                    onPressed: _isLoadingRate ? null : _toggleCurrency,
                     style: IconButton.styleFrom(
                       minimumSize: const Size(44, 44),
                       backgroundColor: AppColors.gold,
                       foregroundColor: AppColors.primaryDark,
                     ),
-                    icon: const Icon(Icons.currency_exchange_rounded),
+                    icon: _isLoadingRate
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: AppColors.primaryDark,
+                            ),
+                          )
+                        : const Icon(Icons.currency_exchange_rounded),
                   ),
                 ),
               ),
               MonthSwitcher(
-                month: controller.selectedMonth,
-                onPrevious: () => unawaited(controller.previousMonth()),
-                onNext: () => unawaited(controller.nextMonth()),
+                month: widget.controller.selectedMonth,
+                onPrevious: () => unawaited(widget.controller.previousMonth()),
+                onNext: () => unawaited(widget.controller.nextMonth()),
               ),
               const SizedBox(height: 6),
               Expanded(child: _body(context)),
@@ -93,7 +157,7 @@ class TransactionsPage extends StatelessWidget {
   }
 
   Widget _body(BuildContext context) {
-    if (controller.isLoading) {
+    if (widget.controller.isLoading) {
       return Center(
         child: Semantics(
           label: context.l10n.loading,
@@ -101,11 +165,11 @@ class TransactionsPage extends StatelessWidget {
         ),
       );
     }
-    if (controller.transactions.isEmpty) {
-      return _EmptyTransactions(onRecordRequested: onRecordRequested);
+    if (widget.controller.transactions.isEmpty) {
+      return _EmptyTransactions(onRecordRequested: widget.onRecordRequested);
     }
 
-    final groups = controller.groupedTransactions.entries.toList()
+    final groups = widget.controller.groupedTransactions.entries.toList()
       ..sort((a, b) => b.key.compareTo(a.key));
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
@@ -115,7 +179,8 @@ class TransactionsPage extends StatelessWidget {
         return _DayGroup(
           date: entry.key,
           transactions: entry.value,
-          controller: controller,
+          controller: widget.controller,
+          formatAmount: _formatAmount,
           onEdit: (transaction) => _edit(context, transaction),
         );
       },
@@ -128,12 +193,14 @@ class _DayGroup extends StatelessWidget {
     required this.date,
     required this.transactions,
     required this.controller,
+    required this.formatAmount,
     required this.onEdit,
   });
 
   final DateTime date;
   final List<LedgerTransaction> transactions;
   final LedgerController controller;
+  final _AmountFormatter formatAmount;
   final ValueChanged<LedgerTransaction> onEdit;
 
   @override
@@ -167,7 +234,7 @@ class _DayGroup extends StatelessWidget {
                 ),
                 Text(
                   context.l10n.dailyBalance(
-                    MoneyFormatter.currency(income - expense, signed: true),
+                    formatAmount(income - expense, signed: true),
                   ),
                   style: Theme.of(
                     context,
@@ -183,6 +250,7 @@ class _DayGroup extends StatelessWidget {
                   _TransactionRow(
                     transaction: transactions[index],
                     controller: controller,
+                    formatAmount: formatAmount,
                     onTap: () => onEdit(transactions[index]),
                   ),
                   if (index < transactions.length - 1)
@@ -198,7 +266,7 @@ class _DayGroup extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  context.l10n.dailyIncome(MoneyFormatter.currency(income)),
+                  context.l10n.dailyIncome(formatAmount(income)),
                   style: const TextStyle(
                     color: AppColors.income,
                     fontSize: 12,
@@ -207,7 +275,7 @@ class _DayGroup extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  context.l10n.dailyExpense(MoneyFormatter.currency(expense)),
+                  context.l10n.dailyExpense(formatAmount(expense)),
                   style: const TextStyle(
                     color: AppColors.expense,
                     fontSize: 12,
@@ -226,11 +294,13 @@ class _TransactionRow extends StatelessWidget {
   const _TransactionRow({
     required this.transaction,
     required this.controller,
+    required this.formatAmount,
     required this.onTap,
   });
 
   final LedgerTransaction transaction;
   final LedgerController controller;
+  final _AmountFormatter formatAmount;
   final VoidCallback onTap;
 
   @override
@@ -293,7 +363,8 @@ class _TransactionRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
         trailing: Text(
-          MoneyFormatter.currency(transaction.signedCents, signed: true),
+          formatAmount(transaction.signedCents, signed: true),
+          key: ValueKey('transaction-amount-${transaction.id}'),
           style: TextStyle(color: amountColor, fontWeight: FontWeight.w800),
         ),
       ),
