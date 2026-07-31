@@ -72,7 +72,8 @@ class LedgerController extends ChangeNotifier {
       updatedAt: now,
     );
     await repository.insert(transaction);
-    if (_sameMonth(date, _selectedMonth)) await load();
+    _selectedMonth = DateTools.monthOnly(date);
+    await load();
   }
 
   Future<void> updateTransaction(LedgerTransaction transaction) async {
@@ -116,9 +117,6 @@ class LedgerController extends ChangeNotifier {
     final value = note?.trim();
     return value == null || value.isEmpty ? null : value;
   }
-
-  static bool _sameMonth(DateTime first, DateTime second) =>
-      first.year == second.year && first.month == second.month;
 
   @override
   void dispose() {

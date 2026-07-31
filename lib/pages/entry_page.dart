@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -24,14 +25,17 @@ class EntryPage extends StatefulWidget {
 class _EntryPageState extends State<EntryPage> {
   final _noteController = TextEditingController();
   final _imagePicker = ImagePicker();
+  Timer? _successTimer;
 
   TransactionType _type = TransactionType.expense;
   ExpenseCategory _category = ExpenseCategory.food;
   DateTime _date = DateTools.dateOnly(DateTime.now());
   String _amountText = '';
+  bool _showSuccessBanner = false;
 
   @override
   void dispose() {
+    _successTimer?.cancel();
     _noteController.dispose();
     super.dispose();
   }
@@ -178,10 +182,12 @@ class _EntryPageState extends State<EntryPage> {
       _date = DateTools.dateOnly(DateTime.now());
       _amountText = '';
       _noteController.clear();
+      _showSuccessBanner = true;
     });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(context.l10n.saved)));
+    _successTimer?.cancel();
+    _successTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) setState(() => _showSuccessBanner = false);
+    });
   }
 
   @override
@@ -191,153 +197,362 @@ class _EntryPageState extends State<EntryPage> {
         .where((category) => category != ExpenseCategory.income)
         .toList(growable: false);
 
+    final accent = _type == TransactionType.expense
+        ? AppColors.expense
+        : AppColors.income;
+
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            MambaPageHeader(
-              title: context.l10n.appName,
-              subtitle: context.l10n.mambaTagline,
-            ),
-            const SizedBox(height: 16),
-            SegmentedButton<TransactionType>(
-              segments: [
-                ButtonSegment(
-                  value: TransactionType.expense,
-                  label: Text(context.l10n.expense),
-                  icon: const Icon(Icons.arrow_upward_rounded),
-                ),
-                ButtonSegment(
-                  value: TransactionType.income,
-                  label: Text(context.l10n.income),
-                  icon: const Icon(Icons.arrow_downward_rounded),
-                ),
-              ],
-              selected: {_type},
-              onSelectionChanged: (selection) {
-                setState(() => _type = selection.first);
-              },
-              showSelectedIcon: false,
-            ),
-            const SizedBox(height: 22),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.amount,
-                            style: textTheme.labelLarge?.copyWith(
-                              color: AppColors.mutedText,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              MoneyFormatter.inputDisplay(_amountText),
-                              key: const Key('amount-display'),
-                              style: textTheme.displaySmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: _type == TransactionType.income
-                                    ? AppColors.income
-                                    : AppColors.text,
-                              ),
-                            ),
-                          ),
-                        ],
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      MambaPageHeader(
+                        title: context.l10n.appName,
+                        subtitle: context.l10n.mambaTagline,
                       ),
-                    ),
-                    IconButton.filledTonal(
-                      key: const Key('receipt-photo-button'),
-                      tooltip: context.l10n.photoRecord,
-                      onPressed: _openPhotoMenu,
-                      style: IconButton.styleFrom(
-                        backgroundColor: AppColors.goldSoft,
-                        foregroundColor: AppColors.primary,
+                      const SizedBox(height: 16),
+                      _TransactionTypeSelector(
+                        type: _type,
+                        onChanged: (type) => setState(() => _type = type),
                       ),
-                      icon: const Icon(Icons.document_scanner_rounded),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              context.l10n.category,
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 10),
-            if (_type == TransactionType.income)
-              _CategoryChip(
-                selected: true,
-                icon: ExpenseCategory.income.icon,
-                label: ExpenseCategory.income.label(context.l10n),
-                onTap: () {},
-              )
-            else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final category in categories)
-                    _CategoryChip(
-                      selected: _category == category,
-                      icon: category.icon,
-                      label: category.label(context.l10n),
-                      onTap: () => setState(() => _category = category),
-                    ),
-                ],
-              ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _chooseDate,
-                    icon: const Icon(Icons.calendar_today_rounded, size: 18),
-                    label: Text(
-                      DateFormat.yMMMd(
-                        Localizations.localeOf(context).toLanguageTag(),
-                      ).format(_date),
-                    ),
+                      const SizedBox(height: 14),
+                      _AmountPanel(
+                        amountText: _amountText,
+                        type: _type,
+                        accent: accent,
+                        onPhotoPressed: _openPhotoMenu,
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        context.l10n.category,
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _CategorySelector(
+                        type: _type,
+                        categories: categories,
+                        selected: _category,
+                        onSelected: (category) =>
+                            setState(() => _category = category),
+                      ),
+                      const SizedBox(height: 16),
+                      _EntryDetailsCard(
+                        date: _date,
+                        noteController: _noteController,
+                        onChooseDate: _chooseDate,
+                      ),
+                      const SizedBox(height: 14),
+                      _NumberPad(onKey: _pressKey),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _noteController,
-              maxLength: 100,
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                hintText: context.l10n.note,
-                prefixIcon: const Icon(Icons.edit_note_rounded),
-                counterText: '',
               ),
+              _SaveBar(accent: accent, onSave: _save),
+            ],
+          ),
+          Positioned(
+            top: 10,
+            left: 20,
+            right: 20,
+            child: _SavedBanner(visible: _showSuccessBanner),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TransactionTypeSelector extends StatelessWidget {
+  const _TransactionTypeSelector({required this.type, required this.onChanged});
+
+  final TransactionType type;
+  final ValueChanged<TransactionType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _TypeButton(
+              key: const Key('expense-type'),
+              selected: type == TransactionType.expense,
+              label: context.l10n.expense,
+              icon: Icons.arrow_upward_rounded,
+              color: AppColors.expense,
+              onTap: () => onChanged(TransactionType.expense),
             ),
-            const SizedBox(height: 14),
-            _NumberPad(onKey: _pressKey),
-            const SizedBox(height: 16),
-            FilledButton(
-              key: const Key('save-transaction'),
-              onPressed: _save,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(54),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: _TypeButton(
+              key: const Key('income-type'),
+              selected: type == TransactionType.income,
+              label: context.l10n.income,
+              icon: Icons.arrow_downward_rounded,
+              color: AppColors.income,
+              onTap: () => onChanged(TransactionType.income),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TypeButton extends StatelessWidget {
+  const _TypeButton({
+    super.key,
+    required this.selected,
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final bool selected;
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? color : Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: SizedBox(
+          height: 48,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: selected ? Colors.white : AppColors.mutedText,
+              ),
+              const SizedBox(width: 7),
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? Colors.white : AppColors.text,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              child: Text(context.l10n.saveTransaction),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AmountPanel extends StatelessWidget {
+  const _AmountPanel({
+    required this.amountText,
+    required this.type,
+    required this.accent,
+    required this.onPhotoPressed,
+  });
+
+  final String amountText;
+  final TransactionType type;
+  final Color accent;
+  final VoidCallback onPhotoPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 14, 12, 18),
+      decoration: BoxDecoration(
+        color: Color.alphaBlend(accent.withAlpha(22), AppColors.surface),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: accent.withAlpha(70)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: accent.withAlpha(28),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  type == TransactionType.expense
+                      ? context.l10n.expense
+                      : context.l10n.income,
+                  style: TextStyle(color: accent, fontWeight: FontWeight.w800),
+                ),
+              ),
+              const Spacer(),
+              IconButton.filled(
+                key: const Key('receipt-photo-button'),
+                tooltip: context.l10n.photoRecord,
+                onPressed: onPhotoPressed,
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.surface,
+                  foregroundColor: AppColors.primary,
+                ),
+                icon: const Icon(Icons.document_scanner_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              MoneyFormatter.inputDisplay(amountText),
+              key: const Key('amount-display'),
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                color: accent,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            context.l10n.amount,
+            style: const TextStyle(
+              color: AppColors.mutedText,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategorySelector extends StatelessWidget {
+  const _CategorySelector({
+    required this.type,
+    required this.categories,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final TransactionType type;
+  final List<ExpenseCategory> categories;
+  final ExpenseCategory selected;
+  final ValueChanged<ExpenseCategory> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (type == TransactionType.income) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: SizedBox(
+          width: 72,
+          child: _CategoryTile(
+            selected: true,
+            category: ExpenseCategory.income,
+            color: AppColors.income,
+            onTap: () {},
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var index = 0; index < categories.length; index++) ...[
+          if (index > 0) const SizedBox(width: 4),
+          Expanded(
+            child: _CategoryTile(
+              selected: selected == categories[index],
+              category: categories[index],
+              color: AppColors.categoryColors[index],
+              onTap: () => onSelected(categories[index]),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _CategoryTile extends StatelessWidget {
+  const _CategoryTile({
+    required this.selected,
+    required this.category,
+    required this.color,
+    required this.onTap,
+  });
+
+  final bool selected;
+  final ExpenseCategory category;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: selected ? color : AppColors.surface,
+                shape: BoxShape.circle,
+                border: Border.all(color: selected ? color : AppColors.divider),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: color.withAlpha(45),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Icon(
+                category.icon,
+                size: 21,
+                color: selected ? Colors.white : AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 7),
+            Text(
+              category.label(context.l10n),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: selected ? AppColors.text : AppColors.mutedText,
+                fontSize: 12,
+                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -346,41 +561,152 @@ class _EntryPageState extends State<EntryPage> {
   }
 }
 
-class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({
-    required this.selected,
-    required this.icon,
-    required this.label,
-    required this.onTap,
+class _EntryDetailsCard extends StatelessWidget {
+  const _EntryDetailsCard({
+    required this.date,
+    required this.noteController,
+    required this.onChooseDate,
   });
 
-  final bool selected;
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
+  final DateTime date;
+  final TextEditingController noteController;
+  final VoidCallback onChooseDate;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: selected ? AppColors.goldSoft : AppColors.surface,
-      shape: StadiumBorder(
-        side: BorderSide(
-          color: selected ? AppColors.gold : AppColors.divider,
-          width: selected ? 1.5 : 1,
+    return Card(
+      child: Column(
+        children: [
+          InkWell(
+            onTap: onChooseDate,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 20,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    context.l10n.date,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const Spacer(),
+                  Text(
+                    DateFormat.yMMMd(
+                      Localizations.localeOf(context).toLanguageTag(),
+                    ).format(date),
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.mutedText,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const Divider(height: 1),
+          TextField(
+            controller: noteController,
+            maxLength: 100,
+            textInputAction: TextInputAction.done,
+            decoration: InputDecoration(
+              hintText: context.l10n.note,
+              prefixIcon: const Icon(Icons.edit_note_rounded),
+              counterText: '',
+              filled: false,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SaveBar extends StatelessWidget {
+  const _SaveBar({required this.accent, required this.onSave});
+
+  final Color accent;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('save-action-bar'),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.divider)),
+      ),
+      child: FilledButton.icon(
+        key: const Key('save-transaction'),
+        onPressed: onSave,
+        icon: const Icon(Icons.add_rounded),
+        label: Text(context.l10n.saveTransaction),
+        style: FilledButton.styleFrom(
+          backgroundColor: accent,
+          foregroundColor: Colors.white,
+          minimumSize: const Size.fromHeight(54),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(17),
+          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
         ),
       ),
-      child: InkWell(
-        customBorder: const StadiumBorder(),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 19, color: AppColors.primary),
-              const SizedBox(width: 7),
-              Text(label),
-            ],
+    );
+  }
+}
+
+class _SavedBanner extends StatelessWidget {
+  const _SavedBanner({required this.visible});
+
+  final bool visible;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedSlide(
+        key: const Key('saved-banner-slide'),
+        offset: visible ? Offset.zero : const Offset(0, -1.5),
+        duration: const Duration(milliseconds: 180),
+        curve: visible ? Curves.easeOutCubic : Curves.easeInCubic,
+        child: AnimatedOpacity(
+          key: const Key('saved-banner'),
+          opacity: visible ? 1 : 0,
+          duration: const Duration(milliseconds: 140),
+          child: Material(
+            color: AppColors.income,
+            elevation: 8,
+            shadowColor: AppColors.primaryDark.withAlpha(65),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: Colors.white),
+                  const SizedBox(width: 9),
+                  Text(
+                    context.l10n.saved,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
