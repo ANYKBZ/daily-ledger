@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shou_zhi_ben/app.dart';
+import 'package:shou_zhi_ben/models/exchange_rate_quote.dart';
+import 'package:shou_zhi_ben/services/exchange_rate_service.dart';
 
 import 'support/in_memory_repository.dart';
 
@@ -75,4 +77,54 @@ void main() {
     expect(find.text('Take photo'), findsOneWidget);
     expect(find.text('Choose from library'), findsOneWidget);
   });
+
+  testWidgets('converts CNY and USD with the latest injected rate', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      DailyLedgerApp(
+        repository: InMemoryLedgerRepository(),
+        locale: const Locale('zh'),
+        exchangeRateProvider: _FakeExchangeRateProvider(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('明细'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('currency-converter-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('货币转换'), findsOneWidget);
+    expect(find.text('人民币'), findsOneWidget);
+    expect(find.text('美元'), findsWidgets);
+    expect(find.text(r'$14.80'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('swap-currencies')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¥675.83'), findsOneWidget);
+  });
+}
+
+class _FakeExchangeRateProvider implements ExchangeRateProvider {
+  @override
+  Future<ExchangeRateQuote> latest({
+    required String baseCode,
+    required String quoteCode,
+    bool forceRefresh = false,
+  }) async {
+    return ExchangeRateQuote(
+      baseCode: baseCode,
+      quoteCode: quoteCode,
+      rate: baseCode == 'CNY' ? 0.14797 : 6.7583,
+      rateDate: DateTime(2026, 7, 31),
+      fetchedAt: DateTime(2026, 7, 31, 8),
+    );
+  }
 }

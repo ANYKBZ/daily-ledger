@@ -17,6 +17,7 @@ The interface combines the quick-entry, amount-first, card-based structure commo
 - 手动记录美元收入和支出
 - 餐饮、交通、购物、住房、其他五类支出
 - 按日期分组的月度明细
+- 人民币与美元实时换算（Frankfurter 最新官方参考汇率）
 - 编辑、左滑删除与撤销
 - 月度收入、支出、结余和支出分类圆环图
 - 相机与相册小票入口（自动识别将在下一阶段加入）
@@ -27,6 +28,7 @@ The interface combines the quick-entry, amount-first, card-based structure commo
 - Record USD income and expenses manually
 - Five expense categories: food, transport, shopping, housing, and other
 - Monthly transactions grouped by date
+- CNY/USD conversion using Frankfurter's latest official reference rate
 - Edit, swipe to delete, and undo
 - Monthly totals and expense breakdown chart
 - Camera and photo-library receipt entry point (recognition comes next)
@@ -63,6 +65,10 @@ iOS开发需要完整 Xcode 15.2或更高版本。正式提交 App Store 前需�
 第一版不包含账号、云同步、银行连接或广告。账目保存在设备本地。小票图片不会复制到应用的持久存储中。
 
 Version 1 has no accounts, cloud sync, bank connections, or advertising. Ledger data stays on the device, and receipt images are not copied into persistent app storage.
+
+货币换算通过无需密钥的 Frankfurter API 获取央行公布的最新日参考汇率。汇率仅供参考，不等于银行、信用卡或兑换机构的实际成交价；断网时应用会优先显示本次运行期间缓存的最近一次成功结果。
+
+Currency conversion uses the keyless Frankfurter API and the latest daily reference rates published by central banks. Rates are indicative rather than executable bank, card, or cash-exchange prices; if the network is unavailable, the app can fall back to the latest successful result cached during the current session.
 
 ## 许可证 / License
 

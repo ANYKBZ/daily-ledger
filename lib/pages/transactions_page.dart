@@ -6,7 +6,9 @@ import '../core/app_colors.dart';
 import '../core/formatters.dart';
 import '../l10n/localization_extensions.dart';
 import '../models/ledger_transaction.dart';
+import '../services/exchange_rate_service.dart';
 import '../state/ledger_controller.dart';
+import '../widgets/currency_converter_sheet.dart';
 import '../widgets/edit_transaction_sheet.dart';
 import '../widgets/mamba_page_header.dart';
 import '../widgets/month_switcher.dart';
@@ -15,11 +17,24 @@ class TransactionsPage extends StatelessWidget {
   const TransactionsPage({
     super.key,
     required this.controller,
+    required this.exchangeRateProvider,
     required this.onRecordRequested,
   });
 
   final LedgerController controller;
+  final ExchangeRateProvider exchangeRateProvider;
   final VoidCallback onRecordRequested;
+
+  Future<void> _openCurrencyConverter(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      useSafeArea: true,
+      builder: (context) =>
+          CurrencyConverterSheet(provider: exchangeRateProvider),
+    );
+  }
 
   Future<void> _edit(
     BuildContext context,
@@ -50,6 +65,17 @@ class TransactionsPage extends StatelessWidget {
                 child: MambaPageHeader(
                   title: context.l10n.transactionsTab,
                   subtitle: context.l10n.mambaTagline,
+                  action: IconButton.filled(
+                    key: const Key('currency-converter-button'),
+                    tooltip: context.l10n.currencyConverterTooltip,
+                    onPressed: () => _openCurrencyConverter(context),
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(44, 44),
+                      backgroundColor: AppColors.gold,
+                      foregroundColor: AppColors.primaryDark,
+                    ),
+                    icon: const Icon(Icons.currency_exchange_rounded),
+                  ),
                 ),
               ),
               MonthSwitcher(

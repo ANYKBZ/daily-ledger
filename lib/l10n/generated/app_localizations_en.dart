@@ -15,6 +15,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mambaTagline => 'Focus daily. Own every dollar.';
 
   @override
+  String get currencyConverter => 'Currency converter';
+
+  @override
+  String get currencyConverterTooltip => 'Convert Chinese yuan and US dollars';
+
+  @override
+  String get chineseYuan => 'Chinese yuan';
+
+  @override
+  String get usDollar => 'US dollar';
+
+  @override
+  String get fromCurrency => 'From';
+
+  @override
+  String get toCurrency => 'To';
+
+  @override
+  String get switchCurrencies => 'Switch currencies';
+
+  @override
+  String get amountToConvert => 'Amount to convert';
+
+  @override
+  String get convertedResult => 'Converted amount';
+
+  @override
+  String rateDate(String date) {
+    return 'Rate date: $date';
+  }
+
+  @override
+  String get refreshRate => 'Refresh rate';
+
+  @override
+  String get rateError =>
+      'Unable to load the latest rate. Check your connection and retry.';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get currencyDisclaimer =>
+      'Reference rate only; bank fees and spreads are not included.';
+
+  @override
+  String get exchangeRateSource =>
+      'Source: Frankfurter central-bank reference rates';
+
+  @override
   String get recordTab => 'Record';
 
   @override

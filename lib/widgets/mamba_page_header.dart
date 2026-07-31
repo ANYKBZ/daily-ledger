@@ -7,10 +7,12 @@ class MambaPageHeader extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
+    this.action,
   });
 
   final String title;
   final String subtitle;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -38,23 +40,28 @@ class MambaPageHeader extends StatelessWidget {
               Positioned(
                 right: 18,
                 top: 16,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.gold,
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: const Text(
-                    '8  •  24',
-                    style: TextStyle(
-                      color: AppColors.primaryDark,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.2,
+                child: Row(
+                  children: [
+                    if (action != null) ...[action!, const SizedBox(width: 8)],
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.gold,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: const Text(
+                        '8  •  24',
+                        style: TextStyle(
+                          color: AppColors.primaryDark,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
               Positioned(

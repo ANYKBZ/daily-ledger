@@ -15,6 +15,53 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mambaTagline => '专注每一天，掌控每一笔';
 
   @override
+  String get currencyConverter => '货币转换';
+
+  @override
+  String get currencyConverterTooltip => '人民币与美元转换';
+
+  @override
+  String get chineseYuan => '人民币';
+
+  @override
+  String get usDollar => '美元';
+
+  @override
+  String get fromCurrency => '从';
+
+  @override
+  String get toCurrency => '换成';
+
+  @override
+  String get switchCurrencies => '切换货币';
+
+  @override
+  String get amountToConvert => '转换金额';
+
+  @override
+  String get convertedResult => '换算结果';
+
+  @override
+  String rateDate(String date) {
+    return '数据日期：$date';
+  }
+
+  @override
+  String get refreshRate => '刷新汇率';
+
+  @override
+  String get rateError => '无法获取最新汇率，请检查网络后重试。';
+
+  @override
+  String get retry => '重试';
+
+  @override
+  String get currencyDisclaimer => '仅供参考，不含银行手续费或买卖价差。';
+
+  @override
+  String get exchangeRateSource => '数据来源：Frankfurter 中央银行参考汇率';
+
+  @override
   String get recordTab => '记账';
 
   @override
